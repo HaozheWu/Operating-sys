@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
 
@@ -7,16 +8,34 @@
 /* the program execution starts here */
 int main(int argc, char **argv)
 {
-    char    *program;
+    char* command;
+    char* program;
     int pid1, pid2, pid3;
     int cnt = 0;
     int status;
- 
+
+//Compiliation script
+    system("g++ calcloop.c -o calcloop.exe");
+    system("g++ cploop.c -o cploop.exe");
+    system("g++ procmon.c -o procmon.exe");
+
+    //Preview code of procmon.c
+    char c;  
+    FILE *fp = fopen("./procmon.c", "r"); 
+
+    do
+    { 
+        c = fgetc(fp); 
+        putchar(c); 
+    } 
+    while (c != EOF); 
+
+    fclose(fp); 
+
     pid1 = fork();
     if (pid1 < 0){
         exit(-1);
     }else if (pid1 == 0){
-        
         execlp("./calcloop.exe","calcloop",NULL); 
     }
 
@@ -24,23 +43,17 @@ int main(int argc, char **argv)
     if (pid2 < 0){
     	exit(-1);
     }else if(pid2 == 0){
-
-	
 	//char buf [10]; 
+        sleep(1);
         sprintf(program , "%d", pid1 );
 	//const char* p = buf; 
     	execlp("./procmon.exe","procmon", program , NULL);
-
     }
 
     wait(&status); 
     wait(&status); 
 
-     
-
-    
     pid3 = fork();
-    
     if (pid3<0){
    	exit(-1);
     }else if (pid3 ==0 ){
@@ -55,14 +68,8 @@ int main(int argc, char **argv)
     	execlp("./procmon.exe","procmon",program, NULL); 
     }
 
-    wait(&status) ; 
     wait(&status); 
-
-
-
-
-
-
+    wait(&status); 
 
 	//wait(&status) ; printf("pid %d ended", pid1);
 
