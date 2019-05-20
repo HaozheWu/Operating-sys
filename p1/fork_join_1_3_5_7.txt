@@ -1,0 +1,12 @@
+$ ./fork_join 1 3 5 7
+task pid1 start ... will end in 1 sec
+task pid1 end
+pid 3348 ended
+task pid2 start ... will end in 3 sec
+task pid3 start ... will end in 5 sec
+task pid2 end
+pid 7440 ended
+task pid3 end
+pid 9196 ended
+./task pid_parent start ... will end in 7 sec
+./task pid_parent end

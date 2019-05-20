@@ -1,0 +1,12 @@
+$ ./fork_join_none 9 1 5 8
+task pid1 start ... will end in 9 sec
+./task pid_parent start ... will end in 8 sec
+task pid2 start ... will end in 1 sec
+task pid3 start ... will end in 5 sec
+task pid2 end
+task pid3 end
+./task pid_parent end
+pid 8852 ended
+pid 7196 ended
+task pid1 end
+pid 12708 ended
