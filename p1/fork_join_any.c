@@ -34,7 +34,8 @@ int main(int argc, char **argv)
   if (argc > 2) time_period[1] = atoi(argv[2]);
   if (argc > 3) time_period[2] = atoi(argv[3]);
   if (argc > 4) time_period[3] = atoi(argv[4]);
-
+  
+  system("make");
   pid1 = fork();
   if (pid1 < 0) {
     fprintf(stderr, "Fork Failed");

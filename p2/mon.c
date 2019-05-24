@@ -15,11 +15,8 @@ int main(int argc, char **argv)
     int status;
 
 //Compiliation script
-    system("g++ calcloop.c -o calcloop.exe");
-    system("g++ cploop.c -o cploop.exe");
-    system("g++ procmon.c -o procmon.exe");
+    system("make");
 
- 
     pid1 = fork();
     if (pid1 < 0){
         exit(-1);
@@ -48,10 +45,10 @@ int main(int argc, char **argv)
     	execlp("./cploop.exe","cploop",NULL);
     }
 
-    pid2 = fork();
-    if (pid2 <0) {
+    pid4 = fork();
+    if (pid4 <0) {
    	 exit(-1);
-    }else if (pid2 == 0){
+    }else if (pid4 == 0){
     	sprintf(program, "%d", pid3 );
     	execlp("./procmon.exe","procmon",program, NULL); 
     }
