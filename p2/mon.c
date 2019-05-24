@@ -19,19 +19,7 @@ int main(int argc, char **argv)
     system("g++ cploop.c -o cploop.exe");
     system("g++ procmon.c -o procmon.exe");
 
-    //Preview code of procmon.c
-    char c;  
-    FILE *fp = fopen("./procmon.c", "r"); 
-
-    do
-    { 
-        c = fgetc(fp); 
-        putchar(c); 
-    } 
-    while (c != EOF); 
-
-    fclose(fp); 
-
+ 
     pid1 = fork();
     if (pid1 < 0){
         exit(-1);
