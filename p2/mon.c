@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 {
     char* command;
     char* program;
-    int pid1, pid2, pid3;
+    int pid1, pid2, pid3, pid4;
     int cnt = 0;
     int status;
 
