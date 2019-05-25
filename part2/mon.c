@@ -15,7 +15,9 @@ int main(int argc, char **argv)
     int status;
 
 //Compiliation script
-    system("make");
+    system("g++ calcloop.c -o calcloop.exe");
+    system("g++ cploop.c -o cploop.exe");
+    system("g++ procmon.c -o procmon.exe");
 
     pid1 = fork();
     if (pid1 < 0){

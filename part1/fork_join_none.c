@@ -34,8 +34,8 @@ int main(int argc, char **argv)
   if (argc > 2) time_period[1] = atoi(argv[2]);
   if (argc > 3) time_period[2] = atoi(argv[3]);
   if (argc > 4) time_period[3] = atoi(argv[4]);
-  
-  system("make");
+
+  system("g++ task.c -o task");
   pid1 = fork();
   if (pid1 < 0) {
     fprintf(stderr, "Fork Failed");
@@ -69,8 +69,6 @@ int main(int argc, char **argv)
     execlp ("./task", "task", "pid3", str, NULL);
   }
   // main process
-  pid = wait(&status); printf ("pid %d ended\n" ,pid);
-
   sprintf(str, "./task pid_parent %d", time_period[3]);
   system(str);
 
