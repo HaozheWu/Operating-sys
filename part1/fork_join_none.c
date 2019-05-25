@@ -45,6 +45,7 @@ int main(int argc, char **argv)
     // printf("in child 1, pid: %d %d %d\n", pid1, pid2, pid3);
     sprintf(str, "%d", time_period[0]);
     execlp ("./task", "task", "pid1", str, NULL);
+ 
   }
   pid2 = fork();
   if (pid2 < 0) {
@@ -56,6 +57,8 @@ int main(int argc, char **argv)
     // printf("in child 2, pid: %d %d %d\n", pid1, pid2, pid3);
     sprintf(str, "%d", time_period[1]);
     execlp ("./task", "task", "pid2", str, NULL);
+    
+    printf("pid %d ended\n", getpid()); 
   }
   pid3 = fork();
   if (pid3 < 0) {
@@ -67,11 +70,17 @@ int main(int argc, char **argv)
     // printf("in child 3, pid: %d %d %d\n", pid1, pid2, pid3);
     sprintf(str, "%d", time_period[2]);
     execlp ("./task", "task", "pid3", str, NULL);
+     
   }
+
   // main process
   sprintf(str, "./task pid_parent %d", time_period[3]);
   system(str);
 
+  pid = wait(&status); printf("pid %d ended\n",pid);
+
+  pid = wait(&status); printf("pid %d ended\n",pid);
+  pid = wait(&status); printf("pid %d ended\n",pid);
   return(0);  // All is done.
 }               
 

@@ -71,8 +71,13 @@ int main(int argc, char **argv)
   // main process
   pid = wait(&status); printf ("pid %d ended\n" ,pid);
 
+  
   sprintf(str, "./task pid_parent %d", time_period[3]);
   system(str);
+  pid = wait(&status); printf("pid %d ended\n",pid) ; 
+
+  pid = wait(&status); printf("pid %d ended\n",pid) ; 
+
 
   return(0);  // All is done.
 }               
