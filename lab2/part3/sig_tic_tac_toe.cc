@@ -47,23 +47,20 @@ void do_sleep(int seconds);
  *
  * Exit the process with ^C ( = SIGINT) or SIGKILL, SIGTERM
  */
-int static turn; 
+char player;
+char x_file_name[] = "xmove.txt";
+char o_file_name[] = "omove.txt";
+char *my_filename, *oponent_filename;
+int my_pid, oponent_pid;
+int size;
+bool oponent_done = false;
 int main(int argc, char **argv) {
   struct sigaction sa;
-  char player;
+  
   FILE *inFile, *outFile;
   char buffer1[128], buffer2[128];
-  char x_file_name[] = "xmove.txt";
-  char o_file_name[] = "omove.txt";
-  char *my_filename, *oponent_filename;
-  int my_pid, oponent_pid;
-  int size;
-  tic_tac_toe *game = new tic_tac_toe();
-
-
   if (argc != 2) {
     printf ("Usage: sig_tic_tac_toe [X|O] \n");
-    return (-1);
   }
   player = argv[1][0];
   if (player != 'X' && player != 'O') {
@@ -166,6 +163,20 @@ void handle_signal(int signal) {
   if (signal == SIGUSR1){
     turn = 1 ; 
     printf ("received SIGUSR1 signal \n");
+    oponent_done = true;
+    char* gameState = convert2String();
+    set_game_state(gameState);
+    get_player_move(player);
+    //display_game_board();
+    set_game_state(gameState);
+    gameState = convert2String();
+    outFile = fopen (oponent_filename, "w");
+    fprintf (outFile, "%s", gameState);
+    fclose(outFile);
+
+    if(oponent_pid != null){
+
+    }
   }
   else if (signal == SIGINT) exit(0); // CTRL C exit
   else return;
