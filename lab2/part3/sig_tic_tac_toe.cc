@@ -7,8 +7,8 @@
  * Hope it helps :)
  */
 // $ kill -l
- // 1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL       5) SIGTRAP
- // 6) SIGABRT      7) SIGEMT       8) SIGFPE       9) SIGKILL     10) SIGBUS
+// 1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL       5) SIGTRAP
+// 6) SIGABRT      7) SIGEMT       8) SIGFPE       9) SIGKILL     10) SIGBUS
 // 11) SIGSEGV     12) SIGSYS      13) SIGPIPE     14) SIGALRM     15) SIGTERM
 // 16) SIGURG      17) SIGSTOP     18) SIGTSTP     19) SIGCONT     20) SIGCHLD
 // 21) SIGTTIN     22) SIGTTOU     23) SIGIO       24) SIGXCPU     25) SIGXFSZ
@@ -21,9 +21,8 @@
 // 56) SIGRTMAX-8  57) SIGRTMAX-7  58) SIGRTMAX-6  59) SIGRTMAX-5  60) SIGRTMAX-4
 // 61) SIGRTMAX-3  62) SIGRTMAX-2  63) SIGRTMAX-1  64) SIGRTMAX
 
-
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <signal.h> // sigaction(), sigsuspend(), sig*()
 #include <unistd.h> // alarm()
 #include <string.h>
@@ -51,137 +50,174 @@ char player;
 char x_file_name[] = "xmove.txt";
 char o_file_name[] = "omove.txt";
 char *my_filename, *oponent_filename;
+FILE *inFile, *outFile;
 int my_pid, oponent_pid;
-int size;
-bool oponent_done = false;
-int main(int argc, char **argv) {
-  struct sigaction sa;
-  
-  FILE *inFile, *outFile;
-  char buffer1[128], buffer2[128];
-  if (argc != 2) {
-    printf ("Usage: sig_tic_tac_toe [X|O] \n");
-  }
-  player = argv[1][0];
-  if (player != 'X' && player != 'O') {
-    printf ("Usage: player names must be either X or Y");
-    return (-2);
-  }
-  if (player == 'X') {
-    my_filename = x_file_name;
-    oponent_filename = o_file_name;
-    turn = 1 ; 
-  }
-  else {
-    my_filename = o_file_name;
-    oponent_filename = x_file_name;
-  }
+int size, turn;
+bool opponent_done = false;
+tic_tac_toe game;
+int main(int argc, char **argv)
+{
+	struct sigaction sa;
 
-  // Print pid, so that we can send signals from other shells
-  my_pid = getpid();
-  printf("My pid is: %d\n", my_pid);
-  
-  outFile = fopen (my_filename, "w");
-  fprintf (outFile, "%d", my_pid);
-  fclose(outFile);
-  
-  printf ("trying to open input file:\n .");
-  do {
-    sleep(1);
-    inFile = fopen (oponent_filename, "r");
-    printf (".");
-  } while (inFile == NULL);
-  
-  fgets( buffer1, 128, inFile );
-  oponent_pid = atoi (buffer1);
-  printf (" done. \noponent_pid %d \n", oponent_pid);
-  fclose(inFile);
+	
+	char buffer1[128], buffer2[128];
+	if (argc != 2)
+	{
+		printf("Usage: sig_tic_tac_toe [X|O] \n");
+	}
+	player = argv[1][0];
+	if (player != 'X' && player != 'O')
+	{
+		printf("Usage: player names must be either X or Y");
+		return (-2);
+	}
+	if (player == 'X')
+	{
+		my_filename = x_file_name;
+		oponent_filename = o_file_name;
+		turn = 1;
+	}
+	else
+	{
+		my_filename = o_file_name;
+		oponent_filename = x_file_name;
+	}
 
-  // Setup the sighub handler
-  sa.sa_handler = &handle_signal;
+	// Print pid, so that we can send signals from other shells
+	my_pid = getpid();
+	printf("My pid is: %d\n", my_pid);
 
-  // Restart the system call, if at all possible
-  sa.sa_flags = SA_RESTART;
+	outFile = fopen(my_filename, "w");
+	fprintf(outFile, "%d", my_pid);
+	fclose(outFile);
 
-  // Block every signal during the handler
-  sigfillset(&sa.sa_mask);
+	printf("trying to open input file:\n .");
+	do
+	{
+		sleep(1);
+		inFile = fopen(oponent_filename, "r");
+		printf(".");
+	} while (inFile == NULL);
 
-  // Intercept SIGUSR1 and SIGINT
-  if (sigaction(SIGUSR1, &sa, NULL) == -1) {
-      perror("Error: cannot handle SIGUSR1"); // Should not happen
-  }
+	fgets(buffer1, 128, inFile);
+	oponent_pid = atoi(buffer1);
+	printf(" done. \noponent_pid %d \n", oponent_pid);
+	fclose(inFile);
 
-  // Will always fail, SIGKILL is intended to force kill your process
-  // if (sigaction(SIGKILL, &sa, NULL) == -1) {
-      // perror("Cannot handle SIGKILL"); // Will always happen
-      // printf("You can never handle SIGKILL anyway...\n");
-  // }
+	// Setup the sighub handler
+	sa.sa_handler = &handle_signal;
 
-  if (sigaction(SIGINT, &sa, NULL) == -1) {
-      perror("Error: cannot handle SIGINT"); // Should not happen
-  }
+	// Restart the system call, if at all possible
+	sa.sa_flags = SA_RESTART;
 
-  // for (;;) {
-  //     printf("\nSleeping for ~3 seconds\n");
-  //     sleep(3); // Later to be replaced with a SIGALRM
-  // }
+	// Block every signal during the handler
+	sigfillset(&sa.sa_mask);
 
-  
+	// Intercept SIGUSR1 and SIGINT
+	if (sigaction(SIGUSR1, &sa, NULL) == -1)
+	{
+		perror("Error: cannot handle SIGUSR1"); // Should not happen
+	}
 
-  while (true){
+	// Will always fail, SIGKILL is intended to force kill your process
+	// if (sigaction(SIGKILL, &sa, NULL) == -1) {
+	// perror("Cannot handle SIGKILL"); // Will always happen
+	// printf("You can never handle SIGKILL anyway...\n");
+	// }
 
-    if(turn ){
+	if (sigaction(SIGINT, &sa, NULL) == -1)
+	{
+		perror("Error: cannot handle SIGINT"); // Should not happen
+	}
 
-      char buffer[16];
-      char *move = buffer;
-      printf("type somthing \n") ; 
-      move = gets(move) ; 
-          
+	for (;;) {
+	    printf("\nSleeping for ~3 seconds\n");
+	    sleep(3); // Later to be replaced with a SIGALRM
+	}
 
-      kill(oponent_pid,SIGUSR1) ; 
-      turn = 0 ; 
+	// while (true)
+	// {
 
-    }else{
+	// 	if (turn)
+	// 	{
 
-      while(turn == 0 ){
-        printf("\nSleeping for ~3 seconds\n");
-        sleep(3) ; 
-      }
+	// 		char buffer[16];
+	// 		char *move = buffer;
+	// 		printf("type somthing \n");
+	// 		move = gets(move);
 
-    }
+	// 		kill(oponent_pid, SIGUSR1);
+	// 		turn = 0;
+	// 	}
+	// 	else
+	// 	{
 
+	// 		while (turn == 0)
+	// 		{
+	// 			printf("\nSleeping for ~3 seconds\n");
+	// 			sleep(3);
+	// 		}
+	// 	}
+	// }
 
-
-  }
-
-  remove (oponent_filename);  // need to remove file for next time we run the game
+	remove(oponent_filename); // need to remove file for next time we run the game
 }
 
-void handle_signal(int signal) {
-  sigset_t pending;
+void handle_signal(int signal)
+{
+	sigset_t pending;
 
-  if (signal == SIGUSR1){
-    turn = 1 ; 
-    printf ("received SIGUSR1 signal \n");
-    oponent_done = true;
-    char* gameState = convert2String();
-    set_game_state(gameState);
-    get_player_move(player);
-    //display_game_board();
-    set_game_state(gameState);
-    gameState = convert2String();
-    outFile = fopen (oponent_filename, "w");
-    fprintf (outFile, "%s", gameState);
-    fclose(outFile);
+	if (signal == SIGUSR1)
+	{
+		printf("received SIGUSR1 signal \n");
+		opponent_done = true;
+	}
+	else if (signal == SIGINT)
+		exit(0); // CTRL C exit
+	else
+		return;
 
-    if(oponent_pid != null){
+	if (opponent_done){
+		printf("trying to open input file:\n .");
+		do{
+			sleep(1);
+			inFile = fopen(oponent_filename, "r");
+			printf(".");
+		} while (inFile == NULL);
 
-    }
-  }
-  else if (signal == SIGINT) exit(0); // CTRL C exit
-  else return;
+		//read file for current game state
+		char* game_state;
+		for (int i = 0; i < 3; i++){
+			for (int j = 0; j < 3; j++){
+				fscanf(inFile, "%c", &game_state[i*j]);
+			}
+		}
+		fclose(inFile);
+		game.set_game_state(game_state);
 
+		//determine whether the game continues
+		char game_result = game.game_result();
+		if (game_result == '-')
+		{
+			turn = 1;
+		}
 
-  printf("Done handling SIGUSR1\n\n");
+		if (turn){
+			game.get_player_move(player);
+			game_state = game.convert2string();
+			outFile = fopen(my_filename, "w");
+			fprintf(outFile, "%s", game_state);
+			fclose(outFile);
+			game.display_game_board();
+			game_result = game.game_result();
+			if(game_result != '-'){
+				printf("Game result is %c", game_result);
+			}else{
+				turn = 0;
+				kill(oponent_pid, SIGUSR1);
+			}
+		}
+	}
+
+	printf("Done handling SIGUSR1\n\n");
 }
-
