@@ -47,6 +47,7 @@ void do_sleep(int seconds);
  *
  * Exit the process with ^C ( = SIGINT) or SIGKILL, SIGTERM
  */
+int static turn; 
 int main(int argc, char **argv) {
   struct sigaction sa;
   char player;
@@ -57,7 +58,8 @@ int main(int argc, char **argv) {
   char *my_filename, *oponent_filename;
   int my_pid, oponent_pid;
   int size;
-  
+  tic_tac_toe *game = new tic_tac_toe();
+
 
   if (argc != 2) {
     printf ("Usage: sig_tic_tac_toe [X|O] \n");
@@ -71,6 +73,7 @@ int main(int argc, char **argv) {
   if (player == 'X') {
     my_filename = x_file_name;
     oponent_filename = o_file_name;
+    turn = 1 ; 
   }
   else {
     my_filename = o_file_name;
@@ -122,9 +125,37 @@ int main(int argc, char **argv) {
   }
 
   // for (;;) {
-      // printf("\nSleeping for ~3 seconds\n");
-      // sleep(3); // Later to be replaced with a SIGALRM
+  //     printf("\nSleeping for ~3 seconds\n");
+  //     sleep(3); // Later to be replaced with a SIGALRM
   // }
+
+  
+
+  while (true){
+
+    if(turn ){
+
+      char buffer[16];
+      char *move = buffer;
+      printf("type somthing \n") ; 
+      move = gets(move) ; 
+          
+
+      kill(oponent_pid,SIGUSR1) ; 
+      turn = 0 ; 
+
+    }else{
+
+      while(turn == 0 ){
+        printf("\nSleeping for ~3 seconds\n");
+        sleep(3) ; 
+      }
+
+    }
+
+
+
+  }
 
   remove (oponent_filename);  // need to remove file for next time we run the game
 }
@@ -133,6 +164,7 @@ void handle_signal(int signal) {
   sigset_t pending;
 
   if (signal == SIGUSR1){
+    turn = 1 ; 
     printf ("received SIGUSR1 signal \n");
   }
   else if (signal == SIGINT) exit(0); // CTRL C exit
