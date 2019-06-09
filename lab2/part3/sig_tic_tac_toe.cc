@@ -138,7 +138,6 @@ int main(int argc, char **argv)
 	char game_state[3][3];
 	while (!game_end)
 	{
-		game.display_game_board();
 		if (opponent_done)
 		{
 			inFile = fopen(oponent_filename, "r");
@@ -157,7 +156,6 @@ int main(int argc, char **argv)
 			}
 			fclose(inFile);
 			game.set_game_state((char*)game_state);
-
 			//determine whether the game continues
 			game_result = game.game_result();
 			if (game_result == '-')
@@ -173,6 +171,7 @@ int main(int argc, char **argv)
 
 		if (turn == 1)
 		{
+			game.display_game_board();
 			game.get_player_move(player);
 			outFile = fopen(my_filename, "w");
 			fprintf(outFile, "%s", game.convert2string());
@@ -182,14 +181,13 @@ int main(int argc, char **argv)
 			if (game_result != '-')
 			{
 				game_end = true;
-				kill(oponent_pid, SIGINT);
 			}
 			else
 			{
 				turn = 0;
 				opponent_done = false;
-				kill(oponent_pid, SIGUSR1);
 			}
+			kill(oponent_pid, SIGUSR1);
 		}
 
 		while (!opponent_done)
@@ -214,12 +212,6 @@ void handle_signal(int signal)
 		printf("Opponent player turn is done\n");
 		opponent_done = true;
 	}else if(signal == SIGINT){
-		game_result = game.game_result();
-		if(game_result == 'd'){
-			printf("Draw!\n");
-		}else if(game_result == 'X' || game_result == 'O'){
-			printf("Game ended. Player %c wins!\n", game_result);
-		}
 		exit(0);
 	}
 
