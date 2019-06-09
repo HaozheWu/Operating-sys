@@ -23,7 +23,15 @@
  * 
  *
  */
- 
+ int chk_file_exists(const char * filename){
+    /* try to open file to read */
+    FILE *file;
+    if (file = fopen(filename, "r")){
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
  
 int main(int argc, char **argv) {
   char player;
@@ -33,8 +41,14 @@ int main(int argc, char **argv) {
 
   char myfifo[128] = "my_pipe";
   int turn = 0 ; 
-  
-  
+  if (!chk_file_exists(myfifo)) {
+    printf ("file does not exist\n");
+    if (mkfifo(myfifo, 0660) < 0) {
+      printf ("Error opening creating fifo\n");
+      return (-1);
+    }
+  }  
+
   if (argc != 2) {
     printf ("Usage: sig_tic_tac_toe [X|O] \n");
     return (-1);
@@ -46,8 +60,8 @@ int main(int argc, char **argv) {
   }
 
   if (player == 'X'){
+
     turn = 1 ; 
-    sleep(3);
   }
   
 
@@ -58,7 +72,6 @@ int main(int argc, char **argv) {
       char * ptr; 
       fd = open(myfifo, O_WRONLY);
       game->get_player_move(player);
-      printf("\n");
       game->display_game_board();
       ptr = game->convert2string(); 
 
@@ -79,7 +92,6 @@ int main(int argc, char **argv) {
 
 
     }else {
-      printf("Opponent's move:\n");
       char str[128] ;
       char * ptr; 
       fd = open(myfifo, O_RDONLY);
