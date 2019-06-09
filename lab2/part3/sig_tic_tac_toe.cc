@@ -47,6 +47,9 @@ void do_sleep(int seconds);
  * Exit the process with ^C ( = SIGINT) or SIGKILL, SIGTERM
  */
 bool static opponent_done = false;
+char static game_result;
+bool static game_end = false;
+tic_tac_toe game;
 int main(int argc, char **argv)
 {
 	struct sigaction sa;
@@ -58,7 +61,6 @@ int main(int argc, char **argv)
 	int my_pid, oponent_pid;
 	int size;
 	int turn = 0;
-	tic_tac_toe game;
 	char buffer1[128], buffer2[128];
 	if (argc != 2)
 	{
@@ -133,15 +135,12 @@ int main(int argc, char **argv)
 	//     printf("\nSleeping for ~3 seconds\n");
 	//     sleep(3); // Later to be replaced with a SIGALRM
 	// }
-	char game_result;
-	char *game_state;
-	bool game_end = false;
+	char game_state[3][3];
 	while (!game_end)
 	{
+		game.display_game_board();
 		if (opponent_done)
 		{
-			printf("trying to open input file:\n .");
-
 			inFile = fopen(oponent_filename, "r");
 			if(inFile == NULL){
 				perror("Something's wrong with fopen()");
@@ -153,11 +152,11 @@ int main(int argc, char **argv)
 			{
 				for (int j = 0; j < 3; j++)
 				{
-					game_state[i+j] = fgetc(inFile);
-				}
+					fscanf(inFile, "%c", &game_state[i][j]);
+					}
 			}
 			fclose(inFile);
-			game.set_game_state(game_state);
+			game.set_game_state((char*)game_state);
 
 			//determine whether the game continues
 			game_result = game.game_result();
@@ -167,28 +166,28 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				printf("Game result is %c", game_result);
 				game_end = true;
+				kill(oponent_pid, SIGINT);
 			}
 		}
 
 		if (turn == 1)
 		{
 			game.get_player_move(player);
-			game_state = game.convert2string();
 			outFile = fopen(my_filename, "w");
-			fprintf(outFile, "%s", game_state);
+			fprintf(outFile, "%s", game.convert2string());
 			fclose(outFile);
 			game.display_game_board();
 			game_result = game.game_result();
 			if (game_result != '-')
 			{
-				printf("Game result is %c", game_result);
 				game_end = true;
+				kill(oponent_pid, SIGINT);
 			}
 			else
 			{
 				turn = 0;
+				opponent_done = false;
 				kill(oponent_pid, SIGUSR1);
 			}
 		}
@@ -197,6 +196,11 @@ int main(int argc, char **argv)
 		{
 			sleep(3);
 		}
+	}
+	if(game_result == 'd'){
+		printf("Draw!\n");
+	}else{
+		printf("Game ended. Player %c wins!\n", game_result);
 	}
 	remove(oponent_filename); // need to remove file for next time we run the game
 }
@@ -207,12 +211,17 @@ void handle_signal(int signal)
 
 	if (signal == SIGUSR1)
 	{
-		printf("received SIGUSR1 signal \n");
+		printf("Opponent player turn is done\n");
 		opponent_done = true;
-		printf("Done handling SIGUSR1\n\n");
+	}else if(signal == SIGINT){
+		game_result = game.game_result();
+		if(game_result == 'd'){
+			printf("Draw!\n");
+		}else if(game_result == 'X' || game_result == 'O'){
+			printf("Game ended. Player %c wins!\n", game_result);
+		}
+		exit(0);
 	}
-	else if (signal == SIGINT)
-		exit(0); // CTRL C exit
 
 	return;
 }
