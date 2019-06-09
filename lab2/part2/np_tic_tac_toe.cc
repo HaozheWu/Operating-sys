@@ -46,8 +46,8 @@ int main(int argc, char **argv) {
   }
 
   if (player == 'X'){
-
     turn = 1 ; 
+    sleep(3);
   }
   
 
@@ -58,6 +58,8 @@ int main(int argc, char **argv) {
       char * ptr; 
       fd = open(myfifo, O_WRONLY);
       game->get_player_move(player);
+      printf("\n");
+      game->display_game_board();
       ptr = game->convert2string(); 
 
       int index = 0 ; 
@@ -77,6 +79,7 @@ int main(int argc, char **argv) {
 
 
     }else {
+      printf("Opponent's move:\n");
       char str[128] ;
       char * ptr; 
       fd = open(myfifo, O_RDONLY);
