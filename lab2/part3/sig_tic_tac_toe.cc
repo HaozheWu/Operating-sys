@@ -46,20 +46,19 @@ void do_sleep(int seconds);
  *
  * Exit the process with ^C ( = SIGINT) or SIGKILL, SIGTERM
  */
-char player;
-char x_file_name[] = "xmove.txt";
-char o_file_name[] = "omove.txt";
-char *my_filename, *oponent_filename;
-FILE *inFile, *outFile;
-int my_pid, oponent_pid;
-int size, turn;
 bool opponent_done = false;
-tic_tac_toe game;
 int main(int argc, char **argv)
 {
 	struct sigaction sa;
-
-	
+	char player;
+	char x_file_name[] = "xmove.txt";
+	char o_file_name[] = "omove.txt";
+	char *my_filename, *oponent_filename;
+	FILE *inFile, *outFile;
+	int my_pid, oponent_pid;
+	int size;
+	int turn = 0;
+	tic_tac_toe game;
 	char buffer1[128], buffer2[128];
 	if (argc != 2)
 	{
@@ -130,35 +129,78 @@ int main(int argc, char **argv)
 		perror("Error: cannot handle SIGINT"); // Should not happen
 	}
 
-	for (;;) {
-	    printf("\nSleeping for ~3 seconds\n");
-	    sleep(3); // Later to be replaced with a SIGALRM
-	}
-
-	// while (true)
-	// {
-
-	// 	if (turn)
-	// 	{
-
-	// 		char buffer[16];
-	// 		char *move = buffer;
-	// 		printf("type somthing \n");
-	// 		move = gets(move);
-
-	// 		kill(oponent_pid, SIGUSR1);
-	// 		turn = 0;
-	// 	}
-	// 	else
-	// 	{
-
-	// 		while (turn == 0)
-	// 		{
-	// 			printf("\nSleeping for ~3 seconds\n");
-	// 			sleep(3);
-	// 		}
-	// 	}
+	// for (;;) {
+	//     printf("\nSleeping for ~3 seconds\n");
+	//     sleep(3); // Later to be replaced with a SIGALRM
 	// }
+
+	char game_result;
+	char *game_state;
+	while (true)
+	{
+		if (opponent_done)
+		{
+			printf("trying to open input file:\n .");
+			do
+			{
+				sleep(1);
+				inFile = fopen(oponent_filename, "r");
+				printf(".");
+			} while (inFile == NULL);
+
+			//read file for current game state
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					fscanf(inFile, "%c", &game_state[i * j]);
+				}
+			}
+			fclose(inFile);
+			game.set_game_state(game_state);
+
+			//determine whether the game continues
+			game_result = game.game_result();
+			if (game_result == '-')
+			{
+				turn = 1;
+			}else{
+				printf("Game result is %c", game_result);
+				break;
+			}
+		}
+
+		if (turn == 1)
+		{
+			game.get_player_move(player);
+			game_state = game.convert2string();
+			outFile = fopen(my_filename, "w");
+			fprintf(outFile, "%s", game_state);
+			fclose(outFile);
+			game.display_game_board();
+			game_result = game.game_result();
+			if (game_result != '-')
+			{
+				printf("Game result is %c", game_result);
+				break;
+			}
+			else
+			{
+				turn = 0;
+				opponent_done = false;
+				kill(oponent_pid, SIGUSR1);
+			}
+		}
+		else
+		{
+
+			while (turn == 0)
+			{
+				printf("\nSleeping for ~3 seconds\n");
+				sleep(3);
+			}
+		}
+	}
 
 	remove(oponent_filename); // need to remove file for next time we run the game
 }
@@ -176,48 +218,6 @@ void handle_signal(int signal)
 		exit(0); // CTRL C exit
 	else
 		return;
-
-	if (opponent_done){
-		printf("trying to open input file:\n .");
-		do{
-			sleep(1);
-			inFile = fopen(oponent_filename, "r");
-			printf(".");
-		} while (inFile == NULL);
-
-		//read file for current game state
-		char* game_state;
-		for (int i = 0; i < 3; i++){
-			for (int j = 0; j < 3; j++){
-				fscanf(inFile, "%c", &game_state[i*j]);
-			}
-		}
-		fclose(inFile);
-		game.set_game_state(game_state);
-
-		//determine whether the game continues
-		char game_result = game.game_result();
-		if (game_result == '-')
-		{
-			turn = 1;
-		}
-
-		if (turn){
-			game.get_player_move(player);
-			game_state = game.convert2string();
-			outFile = fopen(my_filename, "w");
-			fprintf(outFile, "%s", game_state);
-			fclose(outFile);
-			game.display_game_board();
-			game_result = game.game_result();
-			if(game_result != '-'){
-				printf("Game result is %c", game_result);
-			}else{
-				turn = 0;
-				kill(oponent_pid, SIGUSR1);
-			}
-		}
-	}
 
 	printf("Done handling SIGUSR1\n\n");
 }
