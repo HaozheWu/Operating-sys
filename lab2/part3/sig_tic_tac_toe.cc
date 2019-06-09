@@ -117,71 +117,6 @@ int main(int argc, char **argv)
 	{
 		perror("Error: cannot handle SIGUSR1"); // Should not happen
 	}
-	else
-	{
-		char game_result;
-		char *game_state;
-		printf("%d", opponent_done);
-		if (opponent_done)
-		{
-			printf("trying to open input file:\n .");
-			do
-			{
-				sleep(1);
-				inFile = fopen(oponent_filename, "r");
-				printf(".");
-			} while (inFile == NULL);
-
-			//read file for current game state
-			for (int i = 0; i < 3; i++)
-			{
-				for (int j = 0; j < 3; j++)
-				{
-					fscanf(inFile, "%c", &game_state[i * j]);
-				}
-			}
-			fclose(inFile);
-			game.set_game_state(game_state);
-
-			//determine whether the game continues
-			game_result = game.game_result();
-			if (game_result == '-')
-			{
-				turn = 1;
-			}
-			else
-			{
-				printf("Game result is %c", game_result);
-			}
-		}
-
-		if (turn == 1)
-		{
-			game.get_player_move(player);
-			game_state = game.convert2string();
-			outFile = fopen(my_filename, "w");
-			fprintf(outFile, "%s", game_state);
-			fclose(outFile);
-			game.display_game_board();
-			game_result = game.game_result();
-			if (game_result != '-')
-			{
-				printf("Game result is %c", game_result);
-			}
-			else
-			{
-				turn = 0;
-				opponent_done = false;
-				kill(oponent_pid, SIGUSR1);
-			}
-		}
-
-		while (turn == 0)
-		{
-			printf("\nSleeping for ~3 seconds\n");
-			sleep(3);
-		}
-	}
 
 	// Will always fail, SIGKILL is intended to force kill your process
 	// if (sigaction(SIGKILL, &sa, NULL) == -1) {
@@ -198,7 +133,71 @@ int main(int argc, char **argv)
 	//     printf("\nSleeping for ~3 seconds\n");
 	//     sleep(3); // Later to be replaced with a SIGALRM
 	// }
+	char game_result;
+	char *game_state;
+	bool game_end = false;
+	while (!game_end)
+	{
+		if (opponent_done)
+		{
+			printf("trying to open input file:\n .");
 
+			inFile = fopen(oponent_filename, "r");
+			if(inFile == NULL){
+				perror("Something's wrong with fopen()");
+				exit(1);
+			}
+
+			//read file for current game state
+			for (int i = 0; i < 3; i++)
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					game_state[i+j] = fgetc(inFile);
+				}
+			}
+			fclose(inFile);
+			game.set_game_state(game_state);
+
+			//determine whether the game continues
+			game_result = game.game_result();
+			if (game_result == '-')
+			{
+				turn = 1;
+			}
+			else
+			{
+				printf("Game result is %c", game_result);
+				game_end = true;
+			}
+		}
+
+		if (turn == 1)
+		{
+			game.get_player_move(player);
+			game_state = game.convert2string();
+			outFile = fopen(my_filename, "w");
+			fprintf(outFile, "%s", game_state);
+			fclose(outFile);
+			game.display_game_board();
+			game_result = game.game_result();
+			if (game_result != '-')
+			{
+				printf("Game result is %c", game_result);
+				game_end = true;
+			}
+			else
+			{
+				turn = 0;
+				kill(oponent_pid, SIGUSR1);
+			}
+		}
+
+		while (!opponent_done)
+		{
+			sleep(3);
+		}
+	}
 	remove(oponent_filename); // need to remove file for next time we run the game
 }
 
