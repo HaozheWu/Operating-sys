@@ -104,6 +104,10 @@ int main(int argc, char **argv)
 	oponent_pid = atoi(buffer1);
 	printf(" done. \noponent_pid %d \n", oponent_pid);
 	fclose(inFile);
+	//attempt to avoid user defined signal 1 error with reading moves from test txt files
+	if(player == 'X'){
+		sleep(3);
+	}
 
 	// Setup the sighub handler
 	sa.sa_handler = &handle_signal;
@@ -172,6 +176,7 @@ int main(int argc, char **argv)
 		{
 			game.display_game_board();
 			game.get_player_move(player);
+			printf("\n");
 			outFile = fopen(my_filename, "w");
 			fprintf(outFile, "%s", game.convert2string());
 			fclose(outFile);
