@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
   char myfifo[128] = "my_pipe";
   int turn = 0 ; 
   if (!chk_file_exists(myfifo)) {
-    printf ("file does not exist\n");
+	//    printf ("file does not exist\n");
     if (mkfifo(myfifo, 0660) < 0) {
       printf ("Error opening creating fifo\n");
       return (-1);
