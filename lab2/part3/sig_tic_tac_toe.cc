@@ -165,7 +165,6 @@ int main(int argc, char **argv)
 			else
 			{
 				game_end = true;
-				kill(oponent_pid, SIGINT);
 			}
 		}
 
