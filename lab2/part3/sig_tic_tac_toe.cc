@@ -46,7 +46,7 @@ void do_sleep(int seconds);
  *
  * Exit the process with ^C ( = SIGINT) or SIGKILL, SIGTERM
  */
-bool opponent_done = false;
+bool static opponent_done = false;
 int main(int argc, char **argv)
 {
 	struct sigaction sa;
@@ -117,27 +117,11 @@ int main(int argc, char **argv)
 	{
 		perror("Error: cannot handle SIGUSR1"); // Should not happen
 	}
-
-	// Will always fail, SIGKILL is intended to force kill your process
-	// if (sigaction(SIGKILL, &sa, NULL) == -1) {
-	// perror("Cannot handle SIGKILL"); // Will always happen
-	// printf("You can never handle SIGKILL anyway...\n");
-	// }
-
-	if (sigaction(SIGINT, &sa, NULL) == -1)
+	else
 	{
-		perror("Error: cannot handle SIGINT"); // Should not happen
-	}
-
-	// for (;;) {
-	//     printf("\nSleeping for ~3 seconds\n");
-	//     sleep(3); // Later to be replaced with a SIGALRM
-	// }
-
-	char game_result;
-	char *game_state;
-	while (true)
-	{
+		char game_result;
+		char *game_state;
+		printf("%d", opponent_done);
 		if (opponent_done)
 		{
 			printf("trying to open input file:\n .");
@@ -164,9 +148,10 @@ int main(int argc, char **argv)
 			if (game_result == '-')
 			{
 				turn = 1;
-			}else{
+			}
+			else
+			{
 				printf("Game result is %c", game_result);
-				break;
 			}
 		}
 
@@ -182,7 +167,6 @@ int main(int argc, char **argv)
 			if (game_result != '-')
 			{
 				printf("Game result is %c", game_result);
-				break;
 			}
 			else
 			{
@@ -191,16 +175,29 @@ int main(int argc, char **argv)
 				kill(oponent_pid, SIGUSR1);
 			}
 		}
-		else
-		{
 
-			while (turn == 0)
-			{
-				printf("\nSleeping for ~3 seconds\n");
-				sleep(3);
-			}
+		while (turn == 0)
+		{
+			printf("\nSleeping for ~3 seconds\n");
+			sleep(3);
 		}
 	}
+
+	// Will always fail, SIGKILL is intended to force kill your process
+	// if (sigaction(SIGKILL, &sa, NULL) == -1) {
+	// perror("Cannot handle SIGKILL"); // Will always happen
+	// printf("You can never handle SIGKILL anyway...\n");
+	// }
+
+	if (sigaction(SIGINT, &sa, NULL) == -1)
+	{
+		perror("Error: cannot handle SIGINT"); // Should not happen
+	}
+
+	// for (;;) {
+	//     printf("\nSleeping for ~3 seconds\n");
+	//     sleep(3); // Later to be replaced with a SIGALRM
+	// }
 
 	remove(oponent_filename); // need to remove file for next time we run the game
 }
@@ -213,11 +210,10 @@ void handle_signal(int signal)
 	{
 		printf("received SIGUSR1 signal \n");
 		opponent_done = true;
+		printf("Done handling SIGUSR1\n\n");
 	}
 	else if (signal == SIGINT)
 		exit(0); // CTRL C exit
-	else
-		return;
 
-	printf("Done handling SIGUSR1\n\n");
+	return;
 }
