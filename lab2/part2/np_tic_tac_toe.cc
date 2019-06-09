@@ -41,13 +41,7 @@ int main(int argc, char **argv) {
 
   char myfifo[128] = "my_pipe";
   int turn = 0 ; 
-  if (!chk_file_exists(myfifo)) {
-	//    printf ("file does not exist\n");
-    if (mkfifo(myfifo, 0660) < 0) {
-      printf ("Error opening creating fifo\n");
-      return (-1);
-    }
-  }  
+
 
   if (argc != 2) {
     printf ("Usage: sig_tic_tac_toe [X|O] \n");
@@ -63,7 +57,15 @@ int main(int argc, char **argv) {
 
     turn = 1 ; 
   }
-  
+
+  mkfifo(myfifo, 0660) ; 
+  // if (!chk_file_exists(myfifo)) {
+  //   mkfifo(myfifo, 0660) ; 
+  //   // if (mkfifo(myfifo, 0666) < 0) {
+  //   //   printf ("Error opening creating fifo\n");
+  //   //   return (-1);
+  //   // }
+  // }  
 
   while (true){
 
